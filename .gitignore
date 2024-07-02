@@ -1,3 +1,4 @@
 .idea
 ./Datasets/Converted/*
 ./Datasets/Raw/*
+config.py
