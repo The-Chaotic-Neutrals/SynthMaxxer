@@ -1,9 +1,17 @@
 # Endpoint Fields
 INFERENCE_API_ENDPOINT = "CHOSEN ENDPOINT HERE" + "/v1/messages" # v1/messages is for Claude endpoint, edit yours accordingly.
 INFERENCE_API_KEY = "YOUR API KEY HERE"
+MODEL = "Place the name of your model here"
+
+HEADERS = {
+    "Content-Type": "application/json",
+    "X-API-Key": INFERENCE_API_KEY,
+    # Anthropic Specific Headers
+    "anthropic-version": "2023-06-01"
+}
 
 # Baseline Starting Message
-baseline_config = {
+BASELINE_CLAUDE_CONFIG = {
     "DIRECTORY_NAME": "uncurated_raw_claude_gens",
     "ASSISTANT_START_TAG": "<claude_turn>",
     "ASSISTANT_END_TAG": "</claude_turn>",
@@ -15,7 +23,7 @@ baseline_config = {
 
 # Dictionary to store all configurations
 CONFIGS = {
-    "baseline_claude": baseline_config
+    "baseline_claude": BASELINE_CLAUDE_CONFIG
 }
 
 REFUSAL_PHRASES = [

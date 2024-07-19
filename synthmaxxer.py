@@ -5,12 +5,10 @@ from datetime import datetime
 import random
 import time
 import re
-from config import CONFIGS, REFUSAL_PHRASES, FORCE_RETRY_PHRASES, INFERENCE_API_ENDPOINT, INFERENCE_API_KEY
-# Specify the desired configuration
-selected_config = "baseline_claude"  # Change this to the desired configuration key
+from config import CONFIGS, REFUSAL_PHRASES, FORCE_RETRY_PHRASES, INFERENCE_API_ENDPOINT, HEADERS, MODEL
 
 # Get the selected configuration
-config = CONFIGS[selected_config]
+config = CONFIGS["baseline_claude"]
 
 # Constants
 
@@ -24,15 +22,11 @@ USER_FIRST_MESSAGE = config["USER_FIRST_MESSAGE"]
 ASSISTANT_FIRST_MESSAGE = f"{ASSISTANT_START_TAG}\n{config['ASSISTANT_FIRST_MESSAGE']}\n\n{ASSISTANT_END_TAG}\n\n{USER_START_TAG}"
 
 # Headers for the API request
-headers = {
-    "Content-Type": "application/json",
-    "X-API-Key": INFERENCE_API_KEY,
-    "anthropic-version": "2023-06-01"
-}
+
 
 # Data payload for the API request
 data = {
-    "model": "claude-3-opus-20240229",
+    "model": MODEL,
     "messages": [
         {
             "role": "user",
@@ -75,7 +69,7 @@ def generate_and_save():
         refusal_pattern = re.compile("|".join(REFUSAL_PHRASES))
         force_retry = re.compile("|".join(FORCE_RETRY_PHRASES))
         # Send the request to the proxy using the session object
-        with session.post(INFERENCE_API_ENDPOINT, headers=headers, json=data, stream=True) as response:
+        with session.post(INFERENCE_API_ENDPOINT, headers=HEADERS, json=data, stream=True) as response:
             # Check if the request was successful
             response.raise_for_status()
 
