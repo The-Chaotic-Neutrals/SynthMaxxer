@@ -13,3 +13,12 @@ baseline_config = {
 configs = {
     "baseline": baseline_config
 }
+
+REFUSAL_PHRASES = [
+    "Upon further reflection",
+    "I can't engage"
+]
+
+FORCE_RETRY_PHRASES = [
+    "shivers down"
+]
