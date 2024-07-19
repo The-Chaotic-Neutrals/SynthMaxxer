@@ -4,9 +4,9 @@ INFERENCE_API_KEY = "YOUR API KEY HERE"
 
 # Baseline Starting Message
 baseline_config = {
-    "DIRECTORY_NAME": "uncurated_raw_gens",
-    "CLAUDE_START_TAG": "<claude_turn>",
-    "CLAUDE_END_TAG": "</claude_turn>",
+    "DIRECTORY_NAME": "uncurated_raw_claude_gens",
+    "ASSISTANT_START_TAG": "<claude_turn>",
+    "ASSISTANT_END_TAG": "</claude_turn>",
     "USER_START_TAG": "<human_turn>",
     "USER_END_TAG": "</human_turn>",
     "USER_FIRST_MESSAGE": "You are an innovative AI assistant named Claude created by Anthropic to be helpful, harmless, and honest.",
@@ -14,8 +14,8 @@ baseline_config = {
 }
 
 # Dictionary to store all configurations
-configs = {
-    "baseline": baseline_config
+CONFIGS = {
+    "baseline_claude": baseline_config
 }
 
 REFUSAL_PHRASES = [

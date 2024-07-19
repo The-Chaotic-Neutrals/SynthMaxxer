@@ -5,63 +5,28 @@ from datetime import datetime
 import random
 import time
 import re
-from config import configs
-
+from config import CONFIGS, REFUSAL_PHRASES, FORCE_RETRY_PHRASES, INFERENCE_API_ENDPOINT, INFERENCE_API_KEY
 # Specify the desired configuration
-selected_config = "baseline"  # Change this to the desired configuration key
+selected_config = "baseline_claude"  # Change this to the desired configuration key
 
 # Get the selected configuration
-config = configs[selected_config]
-
-# Proxy endpoint and authentication
-PROXY_URL = os.environ.get("PROXY_URL") + "/v1/messages"
-PROXY_API_KEY = os.environ.get("PROXY_API_KEY")
+config = CONFIGS[selected_config]
 
 # Constants
-REFUSAL_PHRASES = [
-    "Upon further reflection",
-    "I can't engage",
-    "there's been a misunderstanding",
-    "I don't feel comfortable continuing",
-    "I don't feel comfortable engaging"
-    "I will not engage",
-    "I will not continue this"
-    "I'm not able to engage",
-    "I'm actually an AI assistant called Claude",
-    "I'm sorry, but",
-    "keep things family-friendly",
-    "I'm not confortable roleplaying",
-    "I'm not able to produce",
-    "keep things clean",
-    "I have to draw the line",
-    "I apologize, but I'm not comfortable",
-    "I'm not actually",
-    "Perhaps we could have a thoughtful discussion",
-    "I believe there has been a misunderstanding"
-]
-
-GENERAL_FUCKERY = [
-    "_attempt",
-    "ministrations",
-    "shivers down",
-    "clench around nothing",
-    "feather-light kisses",
-    "clenching on nothing"
-]
 
 # Use the selected configuration variables
 DIRECTORY_NAME = config["DIRECTORY_NAME"]
-CLAUDE_START_TAG = config["CLAUDE_START_TAG"]
-CLAUDE_END_TAG = config["CLAUDE_END_TAG"]
+ASSISTANT_START_TAG = config["ASSISTANT_START_TAG"]
+ASSISTANT_END_TAG = config["ASSISTANT_END_TAG"]
 USER_START_TAG = config["USER_START_TAG"]
 USER_END_TAG = config["USER_END_TAG"]
 USER_FIRST_MESSAGE = config["USER_FIRST_MESSAGE"]
-ASSISTANT_FIRST_MESSAGE = f"{CLAUDE_START_TAG}\n{config['ASSISTANT_FIRST_MESSAGE']}\n\n{CLAUDE_END_TAG}\n\n{USER_START_TAG}"
+ASSISTANT_FIRST_MESSAGE = f"{ASSISTANT_START_TAG}\n{config['ASSISTANT_FIRST_MESSAGE']}\n\n{ASSISTANT_END_TAG}\n\n{USER_START_TAG}"
 
 # Headers for the API request
 headers = {
     "Content-Type": "application/json",
-    "X-API-Key": PROXY_API_KEY,
+    "X-API-Key": INFERENCE_API_KEY,
     "anthropic-version": "2023-06-01"
 }
 
@@ -108,9 +73,9 @@ def handle_response(response_text):
 def generate_and_save():
     try:
         refusal_pattern = re.compile("|".join(REFUSAL_PHRASES))
-        general_fuckery = re.compile("|".join(GENERAL_FUCKERY))
+        force_retry = re.compile("|".join(FORCE_RETRY_PHRASES))
         # Send the request to the proxy using the session object
-        with session.post(PROXY_URL, headers=headers, json=data, stream=True) as response:
+        with session.post(INFERENCE_API_ENDPOINT, headers=headers, json=data, stream=True) as response:
             # Check if the request was successful
             response.raise_for_status()
 
@@ -126,14 +91,14 @@ def generate_and_save():
                             accumulated_content += content
                             print(content, end='', flush=True)
                             full_response += content
-                            if accumulated_content.endswith(CLAUDE_END_TAG):
+                            if accumulated_content.endswith(ASSISTANT_END_TAG):
                                 if handle_response(full_response):
                                     break
                             if refusal_pattern.search(accumulated_content):
                                 print("\nRefusal detected. Restarting...")
                                 return
-                            if general_fuckery.search(accumulated_content):
-                                print("\nGeneral goofy AI fuckery, REDO!")
+                            if force_retry.search(accumulated_content):
+                                print("\nBanned phrase, REDO!")
                                 return
                         elif chunk['type'] == 'message_stop':
                             pass  # Ignore message_stop, we're checking for CLAUDE_END_TAG instead
@@ -142,7 +107,7 @@ def generate_and_save():
                     except KeyError:
                         pass
 
-            if not full_response.endswith(CLAUDE_END_TAG):  # If the response didn't stop and save
+            if not full_response.endswith(ASSISTANT_END_TAG):  # If the response didn't stop and save
                 save_response(full_response)
 
     except requests.exceptions.RequestException as e:
