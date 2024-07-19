@@ -1,9 +1,7 @@
 import os
 import json
 from datetime import datetime
-from config import CONFIGS
-
-config = CONFIGS["baseline_claude"]
+from synthmaxxer import config
 
 # Specify the raw directory and output file
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")

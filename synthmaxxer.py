@@ -140,11 +140,13 @@ def save_response(full_response):
 
     print(f"\nResponse has been saved to {filename}")
 
-# Main loop
-while True:
-    generate_and_save()
+if __name__ == "__main__":
+    # Main loop
+    while True:
+        generate_and_save()
 
-    # Random delay between ~0.1-0.5 seconds
-    delay = random.uniform(0.1, 0.5)
-    print(f"\nWaiting for {delay:.2f} seconds before the next generation...")
-    time.sleep(delay)
+        # Random delay between ~0.1-0.5 seconds
+        delay = random.uniform(0.1, 0.5)
+        print(f"\nWaiting for {delay:.2f} seconds before the next generation...")
+        time.sleep(delay)
+
