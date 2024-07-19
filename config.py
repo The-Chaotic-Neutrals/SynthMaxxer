@@ -1,3 +1,7 @@
+# Endpoint Fields
+INFERENCE_API_ENDPOINT = "CHOSEN ENDPOINT HERE" + "/v1/messages" # v1/messages is for Claude endpoint, edit yours accordingly.
+INFERENCE_API_KEY = "YOUR API KEY HERE"
+
 # Baseline Starting Message
 baseline_config = {
     "DIRECTORY_NAME": "uncurated_raw_gens",
