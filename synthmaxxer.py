@@ -20,6 +20,7 @@ USER_START_TAG = config["USER_START_TAG"]
 USER_END_TAG = config["USER_END_TAG"]
 USER_FIRST_MESSAGE = config["USER_FIRST_MESSAGE"]
 ASSISTANT_FIRST_MESSAGE = f"{ASSISTANT_START_TAG}\n{config['ASSISTANT_FIRST_MESSAGE']}\n\n{ASSISTANT_END_TAG}\n\n{USER_START_TAG}"
+SYSTEM_MESSAGE = config["SYSTEM_MESSAGE"]
 
 # Headers for the API request
 
@@ -41,7 +42,7 @@ data = {
     "temperature": 1,
     "top_p": 1,
     "top_k": 0,
-    "system": "[Begin]\n<chat_history>",
+    "system": SYSTEM_MESSAGE,
     "stream": True  # Enable streaming
 }
 
@@ -111,14 +112,32 @@ def generate_and_save():
 def save_response(full_response):
     # Generate filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    filename = f"Datasets/Raw/{DIRECTORY_NAME}/{timestamp}_claude_opus_synthstruct.txt"
+    filename = f"Datasets/Raw/{DIRECTORY_NAME}/{timestamp}_claude_opus_synthstruct.json"
 
-    # Export the finished generation with USER_START_TAG at the start
+    # Split the response into user and assistant messages
+    messages = re.split(f"({USER_START_TAG}|{ASSISTANT_START_TAG})", USER_START_TAG + full_response)[1:]
+    structured_messages = [
+        {
+            "from": "system",
+            "value": SYSTEM_MESSAGE
+        },
+    ]
+
+    for i in range(0, len(messages), 2):
+        role = "human" if messages[i] == USER_START_TAG else "gpt"
+        content = messages[i + 1].strip().replace(USER_END_TAG, "").replace(ASSISTANT_END_TAG, "")
+        structured_messages.append({"from": role, "value": content})
+
+    # Create the ShareGPT JSON format
+    sharegpt_data = {
+        "id": timestamp,
+        "conversations": structured_messages
+    }
+
+    # Save the JSON data to a file
     with open(filename, "w", encoding="utf-8") as f:
-        if full_response.startswith('\n'):
-            f.write(USER_START_TAG + full_response)
-        else:
-            f.write(USER_START_TAG + "\n" + full_response)
+        json.dump(sharegpt_data, f, ensure_ascii=False, indent=2)
+
     print(f"\nResponse has been saved to {filename}")
 
 # Main loop
