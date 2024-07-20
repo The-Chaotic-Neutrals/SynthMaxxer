@@ -52,18 +52,23 @@ os.makedirs(f"Datasets/Raw/{DIRECTORY_NAME}", exist_ok=True)
 # Create a session object
 session = requests.Session()
 
+
 def handle_response(response_text):
-    if random.random() < 0.25:  # 25% chance of stopping and saving
+    messages = re.split(f"({USER_START_TAG}|{ASSISTANT_START_TAG})", USER_START_TAG + response_text)[1:]
+    gpt_turns = sum(1 for i in range(0, len(messages), 2) if messages[i] == ASSISTANT_START_TAG)
+
+    if gpt_turns > 1 and random.random() < 0.25:  # 25% chance of stopping and saving
         print("\n--------------------")
         print("CHECKING IF CAN SAVE? YES")
         print("--------------------")
-        save_response(response_text)
+        save_response(messages, True)
         return True
     else:
         print("\n--------------------")
         print("CHECKING IF CAN SAVE? NO")
         print("--------------------")
         return False
+
 
 def generate_and_save():
     try:
@@ -103,19 +108,23 @@ def generate_and_save():
                         pass
 
             if not full_response.endswith(ASSISTANT_END_TAG):  # If the response didn't stop and save
-                save_response(full_response)
+                save_response(full_response, False)
 
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
 
 
-def save_response(full_response):
+def save_response(messages, preprocessed):
+    start_index = 2
+
     # Generate filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    filename = f"Datasets/Raw/{DIRECTORY_NAME}/{timestamp}_claude_opus_synthstruct.json"
+    filename = f"Datasets/Raw/{DIRECTORY_NAME}/{timestamp}_claude_opus_synthstruct.jsonl"
 
     # Split the response into user and assistant messages
-    messages = re.split(f"({USER_START_TAG}|{ASSISTANT_START_TAG})", USER_START_TAG + full_response)[1:]
+    if not preprocessed:
+        messages = re.split(f"({USER_START_TAG}|{ASSISTANT_START_TAG})", USER_START_TAG + messages)[1:]
+
     structured_messages = [
         {
             "from": "system",
@@ -123,7 +132,10 @@ def save_response(full_response):
         },
     ]
 
-    for i in range(0, len(messages), 2):
+    if config["IsInstruct"]:
+        start_index = 0
+
+    for i in range(start_index, len(messages), 2):
         role = "human" if messages[i] == USER_START_TAG else "gpt"
         content = messages[i + 1].strip().replace(USER_END_TAG, "").replace(ASSISTANT_END_TAG, "")
         structured_messages.append({"from": role, "value": content})
@@ -140,6 +152,7 @@ def save_response(full_response):
 
     print(f"\nResponse has been saved to {filename}")
 
+
 if __name__ == "__main__":
     # Main loop
     while True:
@@ -149,4 +162,3 @@ if __name__ == "__main__":
         delay = random.uniform(0.1, 0.5)
         print(f"\nWaiting for {delay:.2f} seconds before the next generation...")
         time.sleep(delay)
-
