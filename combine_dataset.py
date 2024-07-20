@@ -6,7 +6,7 @@ from synthmaxxer import config
 # Specify the raw directory and output file
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
 raw_directory = './Datasets/Raw/' + config["DIRECTORY_NAME"]
-output_file = f'./Datasets/Converted/{config["DIRECTORY_NAME"]}_{timestamp}.json'
+output_file = f'./Datasets/Converted/{config["DIRECTORY_NAME"]}_{timestamp}.jsonl'
 
 
 def combine_json_files(raw_directory, output_file):
