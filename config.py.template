@@ -12,13 +12,13 @@ HEADERS = {
 
 # Baseline Starting Message
 BASELINE_CLAUDE_CONFIG = {
-    "DIRECTORY_NAME": "baseline_gens",
-    "ASSISTANT_START_TAG": "<ASSISTANT_TURN>",
-    "ASSISTANT_END_TAG": "</ASSISTANT_TURN>",
-    "USER_START_TAG": "<HUMAN_TURN>",
-    "USER_END_TAG": "</HUMAN_TURN>",
+    "DIRECTORY_NAME": "uncurated_raw_claude_gens",
+    "ASSISTANT_START_TAG": "<claude_turn>",
+    "ASSISTANT_END_TAG": "</claude_turn>",
+    "USER_START_TAG": "<human_turn>",
+    "USER_END_TAG": "</human_turn>",
     "USER_FIRST_MESSAGE": "You are an innovative AI assistant named Claude created by Anthropic to be helpful, harmless, and honest.",
-    "ASSISTANT_FIRST_MESSAGE": "<ASSISTANT_TURN>\nHello! I am Claude, an innovative AI Assistant developed by Anthropic. How can I assist you today?\n\n</ASSISTANT_TURN>\n\n<HUMAN_TURN>",
+    "ASSISTANT_FIRST_MESSAGE": "Hello! I am Claude, an innovative AI Assistant developed by Anthropic. How can I assist you today?",
     "SYSTEM_MESSAGE": "The following is a conversation between Claude, innovative AI Assistant developed by Anthropic, and a user of Claude."
 }
 
