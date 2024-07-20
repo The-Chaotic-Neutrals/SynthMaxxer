@@ -24,6 +24,9 @@ def combine_json_files(raw_directory, output_file):
             data = json.load(f)
             combined_data.append(data)
 
+    # Ensure the output directory exists
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
     # Write the combined data to the output file
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(combined_data, f, ensure_ascii=False, indent=2)
