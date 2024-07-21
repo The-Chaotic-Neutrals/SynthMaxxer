@@ -23,10 +23,7 @@ BASELINE_CLAUDE_CONFIG = {
     "IsInstruct": True
 }
 
-# Dictionary to store all configurations
-CONFIGS = {
-    "baseline_claude": BASELINE_CLAUDE_CONFIG
-}
+ACTIVE_CONFIG = BASELINE_CLAUDE_CONFIG
 
 REFUSAL_PHRASES = [
     "Upon further reflection",

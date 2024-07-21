@@ -5,10 +5,10 @@ from datetime import datetime
 import random
 import time
 import re
-from config import CONFIGS, REFUSAL_PHRASES, FORCE_RETRY_PHRASES, INFERENCE_API_ENDPOINT, HEADERS, MODEL
+from config import ACTIVE_CONFIG, REFUSAL_PHRASES, FORCE_RETRY_PHRASES, INFERENCE_API_ENDPOINT, HEADERS, MODEL
 
 # Get the selected configuration
-config = CONFIGS["baseline_claude"]
+config = ACTIVE_CONFIG
 
 # Constants
 
@@ -21,9 +21,6 @@ USER_END_TAG = config["USER_END_TAG"]
 USER_FIRST_MESSAGE = config["USER_FIRST_MESSAGE"]
 ASSISTANT_FIRST_MESSAGE = f"{ASSISTANT_START_TAG}\n{config['ASSISTANT_FIRST_MESSAGE']}\n\n{ASSISTANT_END_TAG}\n\n{USER_START_TAG}"
 SYSTEM_MESSAGE = config["SYSTEM_MESSAGE"]
-
-# Headers for the API request
-
 
 # Data payload for the API request
 data = {
@@ -38,7 +35,7 @@ data = {
             "content": ASSISTANT_FIRST_MESSAGE
         }
     ],
-    "max_tokens": 32876,
+    "max_tokens": 200000,
     "temperature": 1,
     "top_p": 1,
     "top_k": 0,
@@ -46,7 +43,14 @@ data = {
     "stream": True  # Enable streaming
 }
 
-# Ensure the uncurated_raw_gens directory exists
+min_turns = 1
+start_index = 2
+
+if config["IsInstruct"]:
+    min_turns = 0
+    start_index = 0
+
+# Ensure the directory exists
 os.makedirs(f"Datasets/Raw/{DIRECTORY_NAME}", exist_ok=True)
 
 # Create a session object
@@ -57,7 +61,7 @@ def handle_response(response_text):
     messages = re.split(f"({USER_START_TAG}|{ASSISTANT_START_TAG})", USER_START_TAG + response_text)[1:]
     gpt_turns = sum(1 for i in range(0, len(messages), 2) if messages[i] == ASSISTANT_START_TAG)
 
-    if gpt_turns > 1 and random.random() < 0.25:  # 25% chance of stopping and saving
+    if gpt_turns > min_turns and random.random() < 0.25:  # 25% chance of stopping and saving
         print("\n--------------------")
         print("CHECKING IF CAN SAVE? YES")
         print("--------------------")
@@ -115,7 +119,7 @@ def generate_and_save():
 
 
 def save_response(messages, preprocessed):
-    start_index = 2
+
 
     # Generate filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
@@ -131,9 +135,6 @@ def save_response(messages, preprocessed):
             "value": SYSTEM_MESSAGE
         },
     ]
-
-    if config["IsInstruct"]:
-        start_index = 0
 
     for i in range(start_index, len(messages), 2):
         role = "human" if messages[i] == USER_START_TAG else "gpt"
