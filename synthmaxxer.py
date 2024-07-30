@@ -1,10 +1,13 @@
-import requests
+from datetime import datetime
+
 import json
 import os
-from datetime import datetime
 import random
-import time
 import re
+import requests
+import sys
+import time
+
 from config import ACTIVE_CONFIG, REFUSAL_PHRASES, FORCE_RETRY_PHRASES, INFERENCE_API_ENDPOINT, HEADERS, MODEL
 
 # Get the selected configuration
@@ -45,10 +48,12 @@ data = {
 
 min_turns = 1
 start_index = 2
+stopPercentage = 0.10
 
 if config["IsInstruct"]:
     min_turns = 0
     start_index = 0
+    stopPercentage = 0.25
 
 # Ensure the directory exists
 os.makedirs(f"Datasets/Raw/{DIRECTORY_NAME}", exist_ok=True)
@@ -61,7 +66,7 @@ def handle_response(response_text):
     messages = re.split(f"({USER_START_TAG}|{ASSISTANT_START_TAG})", USER_START_TAG + response_text)[1:]
     gpt_turns = sum(1 for i in range(0, len(messages), 2) if messages[i] == ASSISTANT_START_TAG)
 
-    if gpt_turns > min_turns and random.random() < 0.25:  # 25% chance of stopping and saving
+    if gpt_turns > min_turns and random.random() < stopPercentage:
         print("\n--------------------")
         print("CHECKING IF CAN SAVE? YES")
         print("--------------------")
@@ -95,6 +100,12 @@ def generate_and_save():
                             accumulated_content += content
                             print(content, end='', flush=True)
                             full_response += content
+
+                            # Check for the error string
+                            if "<!-- oai-proxy-error -->" in full_response:
+                                print("\nError: OAI Proxy Error detected. Stopping the program.")
+                                sys.exit(1)
+
                             if accumulated_content.endswith(ASSISTANT_END_TAG):
                                 if handle_response(full_response):
                                     break
