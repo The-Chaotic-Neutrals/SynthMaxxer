@@ -102,8 +102,8 @@ def generate_and_save():
                             full_response += content
 
                             # Check for the error string
-                            if "<!-- oai-proxy-error -->" in full_response:
-                                print("\nError: OAI Proxy Error detected. Stopping the program.")
+                            if "No Keys Available" in full_response:
+                                print("\nError: Key Error. Stopping the program.")
                                 sys.exit(1)
 
                             if accumulated_content.endswith(ASSISTANT_END_TAG):
