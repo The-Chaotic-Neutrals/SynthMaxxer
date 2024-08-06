@@ -7,6 +7,8 @@ import re
 import requests
 import sys
 import time
+import pathlib
+
 
 from config import ACTIVE_CONFIG, REFUSAL_PHRASES, FORCE_RETRY_PHRASES, INFERENCE_API_ENDPOINT, HEADERS, MODEL
 
@@ -14,6 +16,9 @@ from config import ACTIVE_CONFIG, REFUSAL_PHRASES, FORCE_RETRY_PHRASES, INFERENC
 config = ACTIVE_CONFIG
 
 # Constants
+
+# Get the directory of the current script
+SCRIPT_DIR = pathlib.Path(__file__).parent.absolute()
 
 # Use the selected configuration variables
 DIRECTORY_NAME = config["DIRECTORY_NAME"]
@@ -48,7 +53,7 @@ data = {
 
 min_turns = 1
 start_index = 2
-stopPercentage = 0.10
+stopPercentage = 0.05
 
 if config["IsInstruct"]:
     min_turns = 0
@@ -56,7 +61,7 @@ if config["IsInstruct"]:
     stopPercentage = 0.25
 
 # Ensure the directory exists
-os.makedirs(f"Datasets/Raw/{DIRECTORY_NAME}", exist_ok=True)
+os.makedirs(f"{SCRIPT_DIR}/Datasets/Raw/{DIRECTORY_NAME}", exist_ok=True)
 
 # Create a session object
 session = requests.Session()
@@ -131,10 +136,12 @@ def generate_and_save():
 
 def save_response(messages, preprocessed):
 
-
     # Generate filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    filename = f"Datasets/Raw/{DIRECTORY_NAME}/{timestamp}_claude_opus_synthstruct.jsonl"
+    filename = SCRIPT_DIR / f"Datasets/Raw/{DIRECTORY_NAME}/{timestamp}_claude_opus_synthstruct.jsonl"
+
+    # Ensure the directory exists
+    filename.parent.mkdir(parents=True, exist_ok=True)
 
     # Split the response into user and assistant messages
     if not preprocessed:

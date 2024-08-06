@@ -1,28 +1,38 @@
 import os
 import json
+import pathlib
+
 from datetime import datetime
 from synthmaxxer import config
 
 # Specify the raw directory and output file
+
+# Get the directory of the current script
+SCRIPT_DIR = pathlib.Path(__file__).parent.absolute()
+
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-raw_directory = './Datasets/Raw/' + config["DIRECTORY_NAME"]
-output_file = f'./Datasets/Converted/{config["DIRECTORY_NAME"]}_{timestamp}.jsonl'
+raw_directory = f'{SCRIPT_DIR}/Datasets/Raw/{config["DIRECTORY_NAME"]}'
+output_file = f'{SCRIPT_DIR}/Datasets/Converted/{config["DIRECTORY_NAME"]}_{timestamp}.jsonl'
 
 
 def combine_json_files(raw_directory, output_file):
     combined_data = []
 
-    # Get a list of JSON files in the raw directory
-    json_files = [file for file in os.listdir(raw_directory) if file.endswith('.jsonl')]
+    # Get a list of JSONL files in the raw directory
+    jsonl_files = [file for file in os.listdir(raw_directory) if file.endswith('.jsonl')]
 
-    # Iterate over each JSON file
-    for json_file in json_files:
-        file_path = os.path.join(raw_directory, json_file)
+    # Iterate over each JSONL file
+    for jsonl_file in jsonl_files:
+        file_path = os.path.join(raw_directory, jsonl_file)
 
-        # Read the JSON file and append its contents to the combined data
+        # Read the JSONL file and append its contents to the combined data
         with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            combined_data.append(data)
+            content = f.read()
+            try:
+                data = json.loads(content)
+                combined_data.append(data)
+            except json.JSONDecodeError:
+                print(f"Skipping file {jsonl_file} due to JSON decoding error")
 
     # Ensure the output directory exists
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
