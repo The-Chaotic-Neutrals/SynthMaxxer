@@ -8,12 +8,20 @@ import requests
 import sys
 import time
 import pathlib
+import argparse
 
+from config import *
 
-from config import ACTIVE_CONFIG, REFUSAL_PHRASES, FORCE_RETRY_PHRASES, INFERENCE_API_ENDPOINT, HEADERS, MODEL
+def parse_args():
+    parser = argparse.ArgumentParser(description="SynthMaxxer - Fast Synthetic Data For Training")
+    parser.add_argument('--config', type=str, default=ACTIVE_CONFIG, help='Configuration to use')
+    parser.add_argument('--model', type=str, default=MODEL, help='Model to use')
+    return parser.parse_args()
+
+args = parse_args()
 
 # Get the selected configuration
-config = ACTIVE_CONFIG
+configuration = globals()[args.config]
 
 # Constants
 
@@ -21,18 +29,18 @@ config = ACTIVE_CONFIG
 SCRIPT_DIR = pathlib.Path(__file__).parent.absolute()
 
 # Use the selected configuration variables
-DIRECTORY_NAME = config["DIRECTORY_NAME"]
-ASSISTANT_START_TAG = config["ASSISTANT_START_TAG"]
-ASSISTANT_END_TAG = config["ASSISTANT_END_TAG"]
-USER_START_TAG = config["USER_START_TAG"]
-USER_END_TAG = config["USER_END_TAG"]
-USER_FIRST_MESSAGE = config["USER_FIRST_MESSAGE"]
-ASSISTANT_FIRST_MESSAGE = f"{ASSISTANT_START_TAG}\n{config['ASSISTANT_FIRST_MESSAGE']}\n\n{ASSISTANT_END_TAG}\n\n{USER_START_TAG}"
-SYSTEM_MESSAGE = config["SYSTEM_MESSAGE"]
+DIRECTORY_NAME = configuration["DIRECTORY_NAME"]
+ASSISTANT_START_TAG = configuration["ASSISTANT_START_TAG"]
+ASSISTANT_END_TAG = configuration["ASSISTANT_END_TAG"]
+USER_START_TAG = configuration["USER_START_TAG"]
+USER_END_TAG = configuration["USER_END_TAG"]
+USER_FIRST_MESSAGE = configuration["USER_FIRST_MESSAGE"]
+ASSISTANT_FIRST_MESSAGE = f"{ASSISTANT_START_TAG}\n{configuration['ASSISTANT_FIRST_MESSAGE']}\n\n{ASSISTANT_END_TAG}\n\n{USER_START_TAG}"
+SYSTEM_MESSAGE = configuration["SYSTEM_MESSAGE"]
 
 # Data payload for the API request
 data = {
-    "model": MODEL,
+    "model": args.model,
     "messages": [
         {
             "role": "user",
@@ -55,7 +63,7 @@ min_turns = 1
 start_index = 2
 stopPercentage = 0.05
 
-if config["IsInstruct"]:
+if configuration["IsInstruct"]:
     min_turns = 0
     start_index = 0
     stopPercentage = 0.25

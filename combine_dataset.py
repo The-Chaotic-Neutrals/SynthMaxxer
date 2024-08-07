@@ -3,7 +3,7 @@ import json
 import pathlib
 
 from datetime import datetime
-from synthmaxxer import config
+from synthmaxxer import configuration as config
 
 # Specify the raw directory and output file
 
