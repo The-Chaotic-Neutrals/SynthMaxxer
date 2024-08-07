@@ -135,8 +135,12 @@ def generate_and_save():
                     except KeyError:
                         pass
 
-            if not full_response.endswith(ASSISTANT_END_TAG):  # If the response didn't stop and save
-                save_response(full_response, False)
+            if not full_response.endswith(ASSISTANT_END_TAG):
+                # Check if we have both USER and ASSISTANT tags
+                if USER_END_TAG in accumulated_content and ASSISTANT_END_TAG in accumulated_content:
+                    save_response(full_response, False)
+                else:
+                    print("\nMissing USER or ASSISTANT tags. Skipping save.")
 
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
